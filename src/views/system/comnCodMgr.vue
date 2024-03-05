@@ -228,10 +228,14 @@
           :page-range="5"
           :margin-pages="0"
           :click-handler="clickCallback2"
-          :prev-text="'Prev'"
-          :next-text="'Next'"
+          :prev-text="'<'"
+          :next-text="'>'"
           :container-class="'pagination'"
           :page-class="'page-item'"
+          :first-last-button="true"
+          :first-button-text="'<<'"
+          :last-button-text="'>>'"
+
         >
         </paginate>
       </div>
