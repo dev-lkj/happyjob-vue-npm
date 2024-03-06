@@ -5,11 +5,10 @@ import store from "./store";
 import axios from "axios";
 import VueSession from "vue-session";
 import Paginate from "vuejs-paginate-next";
-import VueDaumpostcode from "vue-daum-postcode";
+
+
 
 // import twLib from "./assets/js/twLib";
-
-
 
 // bootstrap framework 를 Vue에서 사용하기 위해
 // boorstrap 에서 뷰 전용 css 를 제공한다.
@@ -67,7 +66,6 @@ app
     .use(VueSession, sessionOptions)
     .use(Paginate)
     //.use(twLib)
-    .use(VueDaumpostcode)
     .mount("#app");
 
 
