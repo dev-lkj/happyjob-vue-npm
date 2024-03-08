@@ -1,7 +1,7 @@
 <template>
     <div id="warehouseInfo">
         <p class="Location">
-            <a href="/system/notice.do" class="btn_set home">메인으로</a> <a class="btn_nav">기준 정보</a> <span class="btn_nav bold">창고정보 관리</span> <a href="" class="btn_set refresh">새로고침</a>
+            <a href="/#/dashboard/home" class="btn_set home">메인으로</a> <a href="javascript:void(0)"class="btn_nav">기준 정보</a> <span class="btn_nav bold">창고정보 관리</span> <a href="/#/dashboard/scm/warehouseInfo" class="btn_set refresh">새로고침</a>
         </p>
 
         <p class="conTitle">
@@ -20,7 +20,7 @@
                     <option value="wh_mng_nm">담당자명</option>
                 </select>
                 <input type="text" style="width: 300px; height: 30px;" id="sname" v-model="sname" name="sname" @keyup.enter="board_search">
-                <a href="javascript:void(0)" class="btnType blue" id="searchBtn" name="btn" @click="board_search(currentPage)"> 
+                <a href="javascript:void(0)" class="btnType blue" id="searchBtn" name="btn" @click="board_search()"> 
                     <span>검 색</span>
                 </a> 
             </div>
@@ -60,10 +60,10 @@
                     <td>{{ item.email }}</td>
                     <td>{{ item.zip_cd }}</td>
                     <td>{{ item.addr }} <br/> {{ item.addr_detail }}</td>
-                    <td @click="modalEdit(item.warehouse_cd)" style="cursor : pointer">
-                    <a href="javascript:void(0)" class="btnType3 color1">
-                        <span>수정</span>
-                    </a>
+                    <td @click="modalEdit(item.warehouse_cd, item.wh_mng_nm)" style="cursor : pointer">
+                        <a href="javascript:void(0)" class="btnType3 color1">
+                            <span>수정</span>
+                        </a>
                     </td>                      
                 </tr>
                 </tbody>
@@ -160,7 +160,7 @@ export default {
             detailList: [],
             sname : '',
             oname : 'all',
-            action: '',
+            subTitle : '',
             currentPage: 1,
             pageSize: 5,
             totalPage: 1,
@@ -169,44 +169,34 @@ export default {
             pageSize2: 5,
             totalPage2: 1,
             totalCnt2: 0,
-
-
         }
     },
     components: {
         paginate: Paginate,
     },
     mounted() {
-        // this.searchButton();
         this.searchList();
     },
     methods: {
         modalNew: async function (){
-            this.action = 'I';
             const modal = await openModal(warehouseInfoModal, {
-                action : this.action,
+                action_parent : 'I',
+                itemlist_parent : this.listitem,
             });
             modal.onclose = () => {
                 this.searchList();
             }
         },
-        modalEdit: async function (warehouse_cd){
-            this.action = 'U';
+        modalEdit: async function (warehouse_cd, wh_mng_nm){
             const modal = await openModal(warehouseInfoModal, {
-                action : this.action,
-                warehouse_cd : this.warehouse_cd,
-                // warehouse_nm : this.warehouse_nm,
-                // wh_mng_id : this.wh_mng_id,
-                // wh_mng_nm : this.wh_mng_nm,
-                // zip_cd : this.zip_cd,
-                // addr_detail : this.addr_detail,
+                action_parent : 'U',
+                warehouse_cd_parent : warehouse_cd,
+                // wh_mng_nm_parent : wh_mng_nm,
             });
             modal.onclose = () => {
                 this.searchList();
             }
         },
-
-
         callfListProduct: function(warehouse_nm, warehouse_cd){
             let vm = this;
 
@@ -225,6 +215,7 @@ export default {
                 vm.pageSize2 = response.data.pageSize;
                 vm.currentPage2 =response.data.currentPageProduct;
                 vm.totalPage2 = vm.page(vm.totalCnt2, vm.pageSize2);
+                vm.subTitle = ' - ' + warehouse_nm;
             })
             .catch(error => {
                 alert("에러! API 요청에 오류가 있습니다.2 " + error);
@@ -244,7 +235,8 @@ export default {
             .post("/scm/listWarehouseVue.do", params)
             .then(function (response) {
             console.log("listWarehouseVue.do",response);
-
+            // alert(response.data.listWarehouseModel[0].wh_mng_nm);
+            // alert(vm.listitem[0].wh_mng_nm);
             vm.listitem = response.data.listWarehouseModel;
             vm.totalCnt = response.data.totalWarehouse;
             vm.pageSize = response.data.pageSize;
@@ -256,7 +248,7 @@ export default {
                 alert("에러! API 요청에 오류가 있습니다. " + error);
             });
         },
-        board_search: function (currentPage) {
+        board_search: function () {
             let vm = this;
 
             this.detailList = [];
@@ -279,56 +271,10 @@ export default {
                 alert("에러! API 요청에 오류가 있습니다. (search) " + error);
             });
         },
-        modal: function(warehouse_cd) {
-            if (warehouse_cd == null || warehouse_cd == "") {
-                this.isModalOpen=true;
-                this.action = "I";
-                this.warehouse_cd = '';
-                this.warehouse_nm = '';
-                this.wh_mng_id = '';
-                this.wh_mng_nm = '';
-                this.zip_cd = '';
-                this.addr = '';
-                this.addr_detail = '';
-                this.deleteBtn = false;
-
-                // this.warehouseCdReadonly(false);
-                // this.warehouseCdBg("FFFFFF");
-                // fInitFormWarehouse();
-                // gfModalPop("#layer1");
-            } else {
-                this.isModalOpen=true;
-                this.action = "U";
-                let params = new URLSearchParams();
-            
-                params.append("warehouse_cd", warehouse_cd);
-                params.append("action", this.action);
-                
-                this.axios
-                .post("/scm/selectWarehouse.do",params)
-                .then(function (response) {
-                    alert("resultMsg", response.data.resultMsg);
-                    alert("result", response.data.result);
-                    alert("warehouseInfoModel", response.data.warehouseInfoModel);
-                
-                }).catch(function (error){
-                    alert("에러! API 요청에 오류가 있습니다. (modal) " + error);
-                });
-            }
-        },
-        // searchButton: function (pageno) {
-        //     if(!pageno) {
-        //         this.currentPage = 1;
-        //     } else {
-        //         this.currentPage = pageno;
-        //     }
-        //     this.searchList();
-        // },
         clickCallback: function (pageNum) {
-            console.log(pageNum);
+            console.log("pageNum::",pageNum);
 
             this.currentPage = pageNum;
-            //this.Paginate.pageNum = 10;
             this.searchList();
         },
         page: function (totalCnt, pageSize) {
@@ -345,7 +291,7 @@ export default {
             }
         },
         
-       
+    
     },
 
 }
@@ -367,9 +313,4 @@ export default {
   cursor: pointer;
 }
 
-#layer1{
-    display:flex;
-    justify-content: center;
-    align-items:center;
-}
 </style>
