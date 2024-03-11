@@ -35,9 +35,9 @@
                 <th scope="row">품목명<span class="font_red">*</span></th>
                 <!-- <td width="40" height="25" style="font-size: 100%">상품 대분류&nbsp;</td> -->
                 <td>
-                  <input type="text" name="l_ct_nm" id="l_ct_nm" v-model="l_ct_nm" v-if="l_ct_nm" :readonly="readonly" />
-                  <select id="l_ct_cd" name="l_ct_cd" v-model="l_ct_cd" v-if="!l_ct_nm">
-                    <option :value="item" v-for="item in uniqueLctnmList" :key="item">{{item}}</option>
+                  <input type="text" name="l_ct_nm" id="l_ct_nm" v-model="l_ct_nm" v-if="l_ct_nm && action =='V'" :readonly="readonly" />
+                  <select id="l_ct_cd" name="l_ct_cd" v-model="l_ct_cd" v-if="action!=='V'">
+                    <option :value="item" v-for="item in uniqueLctnmList" :key="item" :selected="l_ct_cd">{{item}}</option>
                     
                   </select>
                 </td>
@@ -45,16 +45,16 @@
                 <th scope="row">상호명<span class="font_red">*</span></th>
                 <!-- <td width="40" height="25" style="font-size: 100%">상품 중분류&nbsp;</td> -->
                 <td> 
-                  <input type="text" name="m_ct_nm" id="m_ct_nm" v-model="m_ct_nm" v-if="m_ct_nm" :readonly="readonly"/>
-                  <select id="m_ct_cd" name="m_ct_cd" v-model="m_ct_nm" v-if="action!=='V'">
-                    <option :value="item" v-for="item in uniqueMctnmList" :key="item" >{{item}}</option>
+                  <input type="text" name="m_ct_nm" id="m_ct_nm" v-model="m_ct_nm" v-if="m_ct_nm && action =='V'" :readonly="readonly"/>
+                  <select id="m_ct_cd" name="m_ct_cd" v-model="m_ct_cd" v-if="action!=='V'">
+                    <option :value="item" v-for="item in uniqueMctnmList" :key="item" :selected="m_ct_cd">{{item}}</option>
                   </select>
                 </td>                  
                 <th scope="row">공급처명 <span class="font_red">*</span></th>
                 <td>
                   <input type="text" name="supply_nm" id="supply_nm" v-model="supply_nm" v-if="supply_nm && action =='V' " :readonly="readonly"/>
-                  <select id="supply_cd" name="supply_cd" v-model="supply_nm" v-if="action!=='V'" >
-                    <option :value="item" v-for="item in uniqueSupplynmList" :key="item" >{{item}}</option>
+                  <select id="supply_cd" name="supply_cd" v-model="supply_cd" v-if="action!=='V'" >
+                    <option :value="item" v-for="item in uniqueSupplynmList" :key="item" :selected="supply_cd" >{{item}}</option>
                   </select>
                 </td>                  
                 </tr>
@@ -89,7 +89,7 @@
               <tr>
               <td class="thumb"  v-if="action !='V' ">
                 <span> 
-                  <input name="thumbnail" type="file" @chagne="handleFileChange" id="thumbnail" accept="image/* " required/>
+                  <input name="thumbnail" type="file" ref="attachImage" @chagne="handleFileChange" id="thumbnail" accept="image/* " required/>
     
                   <!-- 파일 미리보기 스크립트 영역 -->
                   <!-- <script>
@@ -177,7 +177,7 @@ export default {
       readonly: false,
       
       file: '',
-      thumb_nail: '@assets/images/admin/comm/no_image.png',
+      thumb_nail: require('@/assets/images/admin/comm/set_btn.png'),
       file_no: '',
       file_local_path: '',
       file_relative_path: '',
@@ -193,16 +193,16 @@ export default {
     let params = new URLSearchParams();
     params.append("action", "I");        
     params.append("product_cd", this.product_cd);
-
+    
     this.axios
     .post("/scm/selectSubProduct.do",params)
-    .then(function (response){     
+    .then(function (response){    
       const mainProductInfoModal = response.data.mainProductInfoModel;
       vm.uniqueLctnmList = [...new Set(mainProductInfoModal.map(item => item.l_ct_cd))];
       vm.uniqueMctnmList = [...new Set(mainProductInfoModal.map(item => item.m_ct_cd))];
       vm.uniqueSupplynmList = [...new Set(mainProductInfoModal.map(item => item.supply_cd))];
     }).catch(function (error){
-        alert("에러! API 요청에 오류가 있습니다. (modalSelectI) " + error);
+        alert("에러! API 요청에 오류가 있습니다. (modalSelectCR) " + error);
     });
 
     // 신규 등록 시
@@ -235,9 +235,10 @@ export default {
       .post("/scm/selectSubProduct.do",params)
       .then(function (response){     
         const mainProductInfoModal = response.data.mainProductInfoModel;
-        vm.uniqueLctnmList = [...new Set(mainProductInfoModal.map(item => item.l_ct_nm))];
-        vm.uniqueMctnmList = [...new Set(mainProductInfoModal.map(item => item.m_ct_nm))];
-        vm.uniqueSupplynmList = [...new Set(mainProductInfoModal.map(item => item.supply_nm))];
+        // alert(mainProductInfoModal.l_ct_nm);
+        vm.uniqueLctnmList = [...new Set(mainProductInfoModal.map(item => item.l_ct_cd))];
+        vm.uniqueMctnmList = [...new Set(mainProductInfoModal.map(item => item.m_ct_cd))];
+        vm.uniqueSupplynmList = [...new Set(mainProductInfoModal.map(item => item.supply_cd))];
       }).catch(function (error){
           alert("에러! API 요청에 오류가 있습니다. (modalSelectI) " + error);
       });
@@ -253,7 +254,7 @@ export default {
       .post("/scm/mainProductModal.do",params)
       .then(function (response) {
         const mainProductInfoModal = response.data.mainProductModalModel;
-        // alert(JSON.stringify(mainProductInfoModal));
+        alert(JSON.stringify(mainProductInfoModal));
         // alert(mainProductInfoModal.supply_cd);
           vm.readonly="true";
           vm.product_cd = mainProductInfoModal.product_cd;
@@ -286,18 +287,10 @@ export default {
       .post("/scm/mainProductModal.do",params)
       .then(function (response) {
         const mainProductInfoModal = response.data.mainProductModalModel;
-        // alert(JSON.stringify(mainProductInfoModal));
-        // alert(JSON.stringify(mainProductInfoModal.supply_nm));
-        // alert(mainProductInfoModal.supply_nm);
-          // vm.readonly="false";
-          // vm.uniqueLctcdList = [...new Set(mainProductInfoModal.map(item => item.l_ct_cd))];
-          // vm.uniqueMctcdList = [...new Set(mainProductInfoModal.map(item => item.m_ct_cd))];
-          // vm.uniqueSupplycdList = [...new Set(mainProductInfoModal.map(item => item.supply_cd))];
           vm.product_cd = mainProductInfoModal.product_cd;
           vm.l_ct_cd = mainProductInfoModal.l_ct_cd;
           vm.m_ct_cd = mainProductInfoModal.m_ct_cd;
           vm.supply_cd = mainProductInfoModal.supply_cd;
-          // vm.supply_cd = mainProductInfoModal.supply_nm;
           vm.warehouse_cd = mainProductInfoModal.warehouse_cd;
           vm.prod_nm = mainProductInfoModal.prod_nm;
           vm.detail = mainProductInfoModal.detail;
@@ -318,47 +311,50 @@ export default {
     }
   },
   methods: {
-    // handleFileChange: function(event){
-    //   this.file = event.target.files[0]; // 선택한 파일 가져오기
-    //   if (!file) return;
+    handleFileChange: function(event){
+      this.file = this.$refs.attachImage.files;
+      alert("file::"+this.file);
+      console.log("file::",this.file);
+      // this.file = event.target.files[0]; // 선택한 파일 가져오기
+      if (!file) return;
 
-    //   // FileReader 객체 생성
-    //   const reader = new FileReader();
-    //   // 파일 읽기
-    //   reader.readAsDataURL(file);
-    //   // 파일 읽기 완료 후 실행되는 이벤트 핸들러
-    //   reader.onload = () => {
-    //     const dataURI = reader.result; // 파일을 data URI로 변환
-    //     this.createThumbnail(dataURI); // 썸네일 생성 함수 호출
-    //   };
+      // // FileReader 객체 생성
+      // const reader = new FileReader();
+      // // 파일 읽기
+      // reader.readAsDataURL(file);
+      // // 파일 읽기 완료 후 실행되는 이벤트 핸들러
+      // reader.onload = () => {
+      //   const dataURI = reader.result; // 파일을 data URI로 변환
+      //   this.createThumbnail(dataURI); // 썸네일 생성 함수 호출
+      // };
 
-    // },
-    // createThumbnail(dataURI) {
-    //   // 이미지 객체 생성
-    //   const tempImage = new Image();
-    //   tempImage.src = dataURI; // 데이터 URI를 이미지 객체에 주입
+    },
+    createThumbnail(dataURI) {
+      // 이미지 객체 생성
+      const tempImage = new Image();
+      tempImage.src = dataURI; // 데이터 URI를 이미지 객체에 주입
 
-    //   // 이미지 로드 완료 후 실행되는 이벤트 핸들러
-    //   tempImage.onload = () => {
-    //     // 캔버스 객체 생성
-    //     const canvas = document.createElement('canvas');
-    //     const canvasContext = canvas.getContext('2d');
+      // 이미지 로드 완료 후 실행되는 이벤트 핸들러
+      tempImage.onload = () => {
+        // 캔버스 객체 생성
+        const canvas = document.createElement('canvas');
+        const canvasContext = canvas.getContext('2d');
         
-    //     // 캔버스 크기 설정
-    //     canvas.width = 300; // 가로 300px
-    //     canvas.height = 300; // 세로 300px
+        // 캔버스 크기 설정
+        canvas.width = 300; // 가로 300px
+        canvas.height = 300; // 세로 300px
 
-    //     // 이미지를 캔버스에 그리기
-    //     canvasContext.drawImage(tempImage, 0, 0, 300, 300);
+        // 이미지를 캔버스에 그리기
+        canvasContext.drawImage(tempImage, 0, 0, 300, 300);
 
-    //     // 캔버스에 그린 이미지를 다시 data URI 형태로 변환
-    //     const thumbnailURI = canvas.toDataURL('image/jpeg');
+        // 캔버스에 그린 이미지를 다시 data URI 형태로 변환
+        const thumbnailURI = canvas.toDataURL('image/jpeg');
 
-    //     // 썸네일 이미지 URL 업데이트
-    //     this.thumbnail = thumbnailURI;
-    //   };
+        // 썸네일 이미지 URL 업데이트
+        this.thumbnail = thumbnailURI;
+      };
     
-    // },
+    },
     save: function () {
       if(!this.validateIsNull()) {
         return;
@@ -366,7 +362,8 @@ export default {
 
       if (confirm("저장하시겠습니까?")) {
         let vm = this;
-        
+        alert("file2::"+this.file);
+      console.log("file2::",this.file);
         let params = new FormData();
 
         params.append("action", this.action);        
@@ -380,7 +377,8 @@ export default {
         params.append("warehouse_cd", this.warehouse_cd);
         params.append("stock", this.stock);
         params.append("detail", this.detail);
-
+        
+        params.append("file", this.file);
         params.append("file_no", this.file_no);
         params.append("file_local_path", this.file_local_path);
         params.append("file_relative_path", this.file_relative_path);
@@ -389,7 +387,15 @@ export default {
         
         
         this.axios
-        .post("/scm/saveMainProduct.do", params)
+        // .post("/scm/saveMainProduct.do", params)
+        ({
+          method: "post",
+          url: "/scm/saveMainProduct.do",
+          headers:{
+            'Content-Type': 'multipart/form-data',
+          },
+          data: params
+        })
         .then(function (response) {
           console.log("save response", response);
           let status = response.status;
@@ -478,7 +484,8 @@ export default {
     },
 
 
-  }
+  },
+
 }
 
 </script>
