@@ -185,7 +185,7 @@ export default {
             params.append("pageSize", pageSize); // 페이지 크기를 100으로 설정하여 전체 리스트를 요청
             params.append("sname", '');
             params.append("oname", 'all');
-          
+            
             const response = await this.axios.post("/scm/listWarehouseVue.do", params);
             const fullList = response.data.listWarehouseModel; // 전체 리스트를 받아옴
             // const modalList = fullList.slice(0, pageSize); // 페이지 크기만큼만 잘라서 모달에 전달
