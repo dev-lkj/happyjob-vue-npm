@@ -34,7 +34,7 @@
                             <td>
                               <input type="text" class="inputTxt p100" name="wh_mng_nm" id="wh_mng_nm" maxlength="50" v-model="wh_mng_nm" v-if="!itemlist" :readonly="readonly" placeholder="신규담당자"/>
                               <select id="wh_mng_nm" name="wh_mng_nm" v-model="wh_mng_nm" v-if="itemlist">
-                                <option v-for="item in itemlist" :key="item.wh_mng_nm" :value="item.wh_mng_nm">{{ item.wh_mng_nm}} </option>
+                                <option v-for="item in wh_mng_nm_list" :key="item" :value="item">{{ item}} </option>
                               </select>
                             </td>
                         </tr>
@@ -80,6 +80,7 @@ export default {
       warehouse_nm: '',
       wh_mng_id : '',
       wh_mng_nm : this.wh_mng_nm_parent || '',      
+      wh_mng_nm_list : [],
       zip_cd : '',
       addr : '',
       addr_detail : '',
@@ -89,14 +90,10 @@ export default {
     };
   },
   created() {
-    // for (item in itemlist){
-    //   alert(item);
-    // };
-    // alert(this.itemlist_parent[5].wh_mng_nm);
-    // alert(itemlist.wh_mng_nm);
     let vm = this;
     // 신규 등록 시
     if (this.action == null || this.action == "I") {
+  
       vm.warehouse_cd = "";
       vm.warehouse_nm = "";
       vm.wh_mng_id = "";
@@ -105,6 +102,9 @@ export default {
       vm.zip_cd = "";
       vm.addr = "";
       vm.addr_detail = "";
+      // itemlist에서 중복된 wh_mng_nm 값을 제거하여 유일한 값만을 포함하는 리스트 생성
+      this.wh_mng_nm_list = [...new Set(this.itemlist.map(item => item.wh_mng_nm))];
+
     } else {
       //  수정 시 (warehouse_cd 에 해당하는 상세정보 가져오기)
       let params = new URLSearchParams();
@@ -133,7 +133,7 @@ export default {
   // html 로딩, 가상 dom 실행, 이 두 개 연결 시 작동
   mounted() {
   },
-  methods: {
+  methods: {  
     daumPostcode: function() {
       new daum.Postcode({
         oncomplete: (data) => {
@@ -227,7 +227,7 @@ export default {
         ["warehouse_cd", "창고코드를  입력해주세요."],
         ["warehouse_nm", "창고명을  입력해주세요."],
         ["wh_mng_id", "담당자ID를  입력해주세요."],
-        // ["wh_mng_nm", "담당자명을  입력해주세요."],
+        ["wh_mng_nm", "담당자명을  입력해주세요."],
         ["zip_cd", "우편번호를  입력해주세요."],
         ["addr", "주소를  입력해주세요."],
         ["addr_detail", "상세주소를  입력해주세요."],

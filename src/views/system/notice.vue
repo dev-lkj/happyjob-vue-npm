@@ -10,7 +10,7 @@
       <span>공지사항</span>
       <span>
         <table
-          style="collapse; border: 1px #50bcdf;"
+          style="collapse: collapse; border: 1px #50bcdf;"
           width="100%"
           cellpadding="5"
           cellspacing="0"

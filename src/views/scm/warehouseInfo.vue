@@ -1,7 +1,7 @@
 <template>
     <div id="warehouseInfo">
         <p class="Location">
-            <a href="/#/dashboard/home" class="btn_set home">메인으로</a> <a href="javascript:void(0)"class="btn_nav">기준 정보</a> <span class="btn_nav bold">창고정보 관리</span> <a href="/#/dashboard/scm/warehouseInfo" class="btn_set refresh">새로고침</a>
+            <a href="/#/dashboard/home" class="btn_set home">메인으로</a> <a href="javascript:void(0)" class="btn_nav">기준 정보</a> <span class="btn_nav bold">창고정보 관리</span> <a href="/#/dashboard/scm/warehouseInfo" class="btn_set refresh">새로고침</a>
         </p>
 
         <p class="conTitle">
@@ -49,8 +49,8 @@
                     <th scope="col">비고</th>
                 </tr>
                 </thead>
-                <tbody id="listInf" v-for="(item,index) in listitem" v-if="listitem.length">
-                <tr>
+                <tbody id="listInf" v-if="listitem.length">
+                <tr v-for="(item) in listitem" :key="item.warehouse_cd" >
                     <td>{{ item.warehouse_cd }}</td>
                     <td @click="callfListProduct(item.warehouse_nm, item.warehouse_cd)" style="cursor : pointer">
                         <a href="javascript:void(0)" title="창고명" style="text-decoration:underline; color:#868686;">{{ item.warehouse_nm }}</a>
@@ -112,8 +112,8 @@
                 </tr>
                 </thead>
 
-                <tbody id="listWarehouseProduct" v-for="(item,index) in detailList" v-if="detailList.length">
-                <tr>
+                <tbody id="listWarehouseProduct"  v-if="detailList.length">
+                <tr v-for="(item) in detailList"  :key="item.product_cd">
                     <td>{{ item.product_cd }}</td>
                     <td>{{ item.prod_nm }}</td>
                     <td>{{ item.l_ct_nm }}</td>
@@ -179,19 +179,29 @@ export default {
     },
     methods: {
         modalNew: async function (){
+            const pageSize = 100; // 페이지 크기를 100으로 설정
+            let params = new URLSearchParams();
+            params.append("currentPage", 1);
+            params.append("pageSize", pageSize); // 페이지 크기를 100으로 설정하여 전체 리스트를 요청
+            params.append("sname", '');
+            params.append("oname", 'all');
+          
+            const response = await this.axios.post("/scm/listWarehouseVue.do", params);
+            const fullList = response.data.listWarehouseModel; // 전체 리스트를 받아옴
+            // const modalList = fullList.slice(0, pageSize); // 페이지 크기만큼만 잘라서 모달에 전달
             const modal = await openModal(warehouseInfoModal, {
                 action_parent : 'I',
-                itemlist_parent : this.listitem,
+                itemlist_parent : fullList,
             });
             modal.onclose = () => {
                 this.searchList();
             }
+            
         },
         modalEdit: async function (warehouse_cd, wh_mng_nm){
             const modal = await openModal(warehouseInfoModal, {
                 action_parent : 'U',
                 warehouse_cd_parent : warehouse_cd,
-                // wh_mng_nm_parent : wh_mng_nm,
             });
             modal.onclose = () => {
                 this.searchList();
