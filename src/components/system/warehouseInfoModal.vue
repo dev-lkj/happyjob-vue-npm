@@ -18,7 +18,7 @@
                         <tr>
                             <th scope="row">창고코드<span class="font_red">*</span></th>
                             <td>
-                              <input type="text" class="inputTxt p100" name="warehouse_cd" id="warehouse_cd" maxlength="20" v-model="warehouse_cd" />
+                              <input type="text" class="inputTxt p100" name="warehouse_cd" id="warehouse_cd" maxlength="20" v-model="warehouse_cd" :readonly="readonly" />
                             </td>
                             <th scope="row">창고명 <span class="font_red">*</span></th>
                             <td>
@@ -28,13 +28,13 @@
                         <tr>
                             <th scope="row">담당자ID<span class="font_red">*</span></th>
                             <td>
-                              <input type="text" class="inputTxt p100" name="wh_mng_id" id="wh_mng_id" maxlength="50" v-model="wh_mng_id"  />
+                              <input type="text" class="inputTxt p100" name="wh_mng_id" id="wh_mng_id" maxlength="50" v-model="wh_mng_id"  :readonly="readonly" />
                             </td>
                             <th scope="row">담당자명</th>
                             <td>
-                              <input type="text" class="inputTxt p100" name="wh_mng_nm" id="wh_mng_nm" maxlength="50" v-model="wh_mng_nm" v-if="!itemlist" :readonly="readonly" placeholder="신규담당자"/>
+                              <input type="text" class="inputTxt p100" name="wh_mng_nm" id="wh_mng_nm" maxlength="50" v-model="wh_mng_nm" v-if="!itemlist" placeholder="신규담당자" :readonly="readonly"/>
                               <select id="wh_mng_nm" name="wh_mng_nm" v-model="wh_mng_nm" v-if="itemlist">
-                                <option v-for="item in wh_mng_nm_list" :key="item" :value="item">{{ item}} </option>
+                                <option v-for="item in wh_mng_nm_list" :key="item" :selected="item == wh_mng_nm" :value="item">{{ item}} </option>
                               </select>
                             </td>
                         </tr>
@@ -53,6 +53,14 @@
                             <td colspan="3"><input type="text" class="inputTxt p100"
                             name="addr_detail" id="addr_detail" maxlength="200" v-model="addr_detail"/></td>
                         </tr>
+                        <tr v-if="tel || mail || action=='I'">
+                            <th scope="row">전화번호<span class="font_red">*</span></th>
+                            <td><input type="text" class="inputTxt p100"
+                            name="tel" id="tel" maxlength="200" v-model="tel" /></td>
+                            <th scope="row">메일주소<span class="font_red">*</span></th>
+                            <td><input type="text" class="inputTxt p100"
+                            name="mail" id="mail" maxlength="200" v-model="mail" /></td>
+                        </tr>
                       </tbody>
                     </table>
 
@@ -70,6 +78,7 @@
 
 <script>
 import { closeModal } from "jenesius-vue-modal";
+import { readonly } from "vue";
 
 export default {
   props: {action_parent : String, warehouse_cd_parent : String, wh_mng_nm_parent: String, itemlist_parent : Array},
@@ -84,6 +93,8 @@ export default {
       zip_cd : '',
       addr : '',
       addr_detail : '',
+      tel: '',
+      mail: '',
       itemlist: this.itemlist_parent,
       readonly: false,
       
@@ -115,6 +126,7 @@ export default {
       this.axios
       .post("/scm/selectWarehouse.do",params)
       .then(function (response) {
+          // alert(JSON.stringify(response.data.warehouseInfoModel))
           vm.readonly="true";
           vm.warehouse_cd = response.data.warehouseInfoModel.warehouse_cd;
           vm.warehouse_nm = response.data.warehouseInfoModel.warehouse_nm;
@@ -123,6 +135,8 @@ export default {
           vm.zip_cd = response.data.warehouseInfoModel.zip_cd;
           vm.addr = response.data.warehouseInfoModel.addr;
           vm.addr_detail = response.data.warehouseInfoModel.addr_detail;
+          vm.tel = response.data.warehouseInfoModel.tel;
+          vm.mail = response.data.warehouseInfoModel.email;
       
       }).catch(function (error){
           alert("에러! API 요청에 오류가 있습니다. (modalSelect) " + error);
@@ -165,6 +179,8 @@ export default {
         params.append("zip_cd", this.zip_cd);
         params.append("addr", this.addr);
         params.append("addr_detail", this.addr_detail);
+        params.append("tel", this.tel);
+        params.append("mail", this.mail);
         
         this.axios
         .post("/scm/saveWarehouse.do", params)

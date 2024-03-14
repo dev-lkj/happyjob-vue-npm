@@ -16,11 +16,12 @@
             <div class="conTitle" style="margin: 0 25px 10px 0; float: left;">
                 <select id="searchKey" name="searchKey" style="width: 100px;" v-model="oname">
                     <option value="all" selected="selected">전체</option>
+                    <option value="warehouse_cd">창고코드</option>
                     <option value="warehouse_nm">창고명</option>
                     <option value="wh_mng_nm">담당자명</option>
                 </select>
-                <input type="text" style="width: 300px; height: 30px;" id="sname" v-model="sname" name="sname" @keyup.enter="board_search">
-                <a href="javascript:void(0)" class="btnType blue" id="searchBtn" name="btn" @click="board_search()"> 
+                <input type="text" style="width: 300px; height: 30px;" id="sname" v-model="sname" name="sname" @keyup.enter="searchList()">
+                <a href="javascript:void(0)" class="btnType blue" id="searchBtn" name="btn" @click="searchList()"> 
                     <span>검 색</span>
                 </a> 
             </div>
@@ -209,7 +210,7 @@ export default {
         },
         callfListProduct: function(warehouse_nm, warehouse_cd){
             let vm = this;
-
+            
             let params = new URLSearchParams();
             params.append("currentPage", this.currentPage2);
             params.append("pageSize", this.pageSize2);
@@ -234,7 +235,7 @@ export default {
         },
         searchList: function (currentPage) {
             let vm = this;
-
+            this.detailList = [];
             let params = new URLSearchParams();
             params.append("currentPage", this.currentPage);
             params.append("pageSize", this.pageSize);
@@ -245,8 +246,6 @@ export default {
             .post("/scm/listWarehouseVue.do", params)
             .then(function (response) {
             console.log("listWarehouseVue.do",response);
-            // alert(response.data.listWarehouseModel[0].wh_mng_nm);
-            // alert(vm.listitem[0].wh_mng_nm);
             vm.listitem = response.data.listWarehouseModel;
             vm.totalCnt = response.data.totalWarehouse;
             vm.pageSize = response.data.pageSize;
@@ -256,29 +255,6 @@ export default {
             })
             .catch(function (error) {
                 alert("에러! API 요청에 오류가 있습니다. " + error);
-            });
-        },
-        board_search: function () {
-            let vm = this;
-
-            this.detailList = [];
-            let params = new URLSearchParams();
-            
-            params.append("currentPage", this.currentPage);
-            params.append("sname", this.sname);
-            params.append("oname", this.oname);
-            params.append("pageSize", this.pageSize);
-            
-            this.axios
-            .post("/scm/listWarehouseVue.do",params)
-            .then(function (response) {
-                vm.listitem = response.data.listWarehouseModel;
-                vm.totalCnt = response.data.totalWarehouse;
-                vm.pageSize = response.data.pageSize;
-                vm.currentPage = response.data.currentPageWarehouse;
-                vm.totalPage = vm.page(vm.totalCnt, vm.pageSize);
-            }).catch(function (error){
-                alert("에러! API 요청에 오류가 있습니다. (search) " + error);
             });
         },
         clickCallback: function (pageNum) {
