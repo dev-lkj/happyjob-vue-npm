@@ -53,7 +53,7 @@
                             <td colspan="3"><input type="text" class="inputTxt p100"
                             name="addr_detail" id="addr_detail" maxlength="200" v-model="addr_detail"/></td>
                         </tr>
-                        <tr v-if="tel || mail || action=='I'">
+                        <tr v-if="tel || mail  || action=='I'">
                             <th scope="row">전화번호<span class="font_red">*</span></th>
                             <td><input type="text" class="inputTxt p100"
                             name="tel" id="tel" maxlength="200" v-model="tel" /></td>
@@ -135,8 +135,8 @@ export default {
           vm.zip_cd = response.data.warehouseInfoModel.zip_cd;
           vm.addr = response.data.warehouseInfoModel.addr;
           vm.addr_detail = response.data.warehouseInfoModel.addr_detail;
-          vm.tel = response.data.warehouseInfoModel.tel;
-          vm.mail = response.data.warehouseInfoModel.email;
+          vm.tel = response.data.warehouseInfoModel.tel ? response.data.warehouseInfoModel.tel : '';
+          vm.mail = response.data.warehouseInfoModel.email ? response.data.warehouseInfoModel.email : '';
       
       }).catch(function (error){
           alert("에러! API 요청에 오류가 있습니다. (modalSelect) " + error);
